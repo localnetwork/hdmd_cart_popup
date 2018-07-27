@@ -23,4 +23,4 @@ HDMD Cart Popup ajaxifies the add_to_cart functionality of Drupal commerce. This
 1. Go to Store -> Configuration -> HDMD Popup Cart
 
 
-<!-- This project was sponsored by <a href="http://halcyonwebdesign.com.ph"> Halcyon Web Design </a> -->
+This project was sponsored by <a href="http://halcyonwebdesign.com.ph"> Halcyon Web Design </a>
