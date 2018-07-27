@@ -1,4 +1,7 @@
-# HDMD Cart Popup ajaxifies the add_to_cart functionality of Drupal commerce. This includes an ajax "quantity" menu see the instructions below.
+# HDMD Cart Popup
+
+## About the module
+HDMD Cart Popup ajaxifies the add_to_cart functionality of Drupal commerce. This includes an ajax "quantity" menu see the instructions below.
 
 
 ## Requirements
