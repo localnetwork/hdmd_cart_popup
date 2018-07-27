@@ -1,0 +1,14 @@
+name = HDMD Cart Pop-up
+description = popup add to cart using Bootstrap Sweet Alert with cart quantity.
+core = 7.x
+package = HDMD
+dependencies[] = commerce
+dependencies[] = commerce_order
+dependencies[] = commerce_stock
+configure = admin/commerce/config//hdmd-cart-popup
+
+;; Stylesheets  
+stylesheets[all][] = css/hdmd_cart_popup.css
+
+;; Scripts
+scripts[] = js/hdmd_cart_popup.js

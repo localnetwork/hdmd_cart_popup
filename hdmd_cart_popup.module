@@ -1,0 +1,157 @@
+<?php
+
+
+/**
+ * Add menu link to administration menu.
+ */
+function hdmd_cart_popup_menu() {
+  return array(
+    'admin/commerce/config/hdmd-cart-popup' => array(
+      'title' => t('HDMD Popup Cart'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('hdmd_cart_popup_admin_form'),
+      'access arguments' => array('administer hdmd cosc'),
+      'weight' => 11 
+    )
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function hdmd_cart_popup_permission() {
+  return array(
+    'administer hdmd_cart_popup' => array(
+      'title' => t('Administer HDMD Popup Cart Settings'),
+      'description' => t('Access to configure HDMD Popup Cart form.'),
+    )
+  );
+}
+
+/**
+ * Custom form for HDMD menu cart link
+ */
+function hdmd_cart_popup_admin_form($form, &$form_state) {
+  // Load the available order statuses.
+  $form['hdmd_cart_popup_linkclass'] = array(
+  	'#type' => 'textfield',
+    '#title' => t('The class of the cart link'),   
+    '#required' => TRUE,
+    '#description' => 'Please enter the class of the cart link',
+	'#default_value' => variable_get('hdmd_cart_popup_linkclass'),
+  ); 
+  return system_settings_form($form);
+  
+} 
+
+
+
+/**
+ * Implements hook_preprocess_page
+ */
+ function hdmd_cart_popup_preprocess_page(&$variables) {
+ 	drupal_add_js('https://unpkg.com/sweetalert2@7.22.2/dist/sweetalert2.min.js', 'external');
+	drupal_add_css('https://unpkg.com/sweetalert2@7.22.2/dist/sweetalert2.min.css', 'external');
+ } 
+
+/**
+ * Implements hook_commerce_cart_add_to_cart_form_alter
+ */
+function hdmd_cart_popup_form_commerce_cart_add_to_cart_form_alter(&$form, $form_state, $form_id) {
+	
+	 
+	$product_type = $form_state['default_product']->type;
+	if($product_type == 'product') {
+		$errors = form_get_errors();   
+		$form['#hdmd_errors'] = $errors;
+		
+		$form['submit']['#ajax'] = array(  
+		    'callback' => '_ajx_process',  
+		);   
+		$product = commerce_product_load($form['product_id']['#value']); 
+		$form['#hdmd_product_title'] = $product->title;
+		
+	} 
+}
+
+
+function _ajx_process($form, &$form_state) {  
+  // $quantity = $form_state['values']['quantity'];
+  theme_status_messages($variables['#access'] = FALSE);
+  
+  global $user; 
+
+  $form = drupal_rebuild_form($form['#form_id'], $form_state, $form); 
+
+  $commands = array();
+  // $commands[] = array('command' => 'commerce_ajax_cart_update') ;  
+  
+  $commands[] = ajax_command_replace('.' . drupal_html_class($form['#form_id']), drupal_render($form));
+  $commands[] = ajax_command_prepend('#block-system-main', theme('status_messages'));
+   
+  $commands[] = array( 'command' => 'ajx_cart_handler', 'product_title'=> $form['#hdmd_product_title'], 'show_error' => $form['#hdmd_errors']);
+  //$commands[] = ajax_command_replace('.menu.secondary li a', $quantity);
+  return array('#type' => 'ajax','#commands' => $commands);
+  
+} 
+
+ /* Implements hook_form_menu_alter */
+
+function hdmd_cart_popup_menu_alter(&$items) {
+  $items['cart/my']['title callback'] = 'hdmd_cart_popup_menu_item_title';
+}
+
+/**
+ * Returns the title of the shopping cart menu item with an item count.
+ */
+
+/* Implements hook_form_menu_item_title */ 
+ 
+function hdmd_cart_popup_menu_item_title() {
+  $user = $GLOBALS['user'];
+ 
+  // Default to a static title.
+  $title = t('Cart 0'); 
+   
+  // If the user actually has a cart order...
+  if ($order = commerce_cart_order_load($user->uid)) {
+    // Count the number of product line items on the order.
+    $wrapper = entity_metadata_wrapper('commerce_order', $order);
+    $quantity = commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types());
+
+    // If there are more than 0 product line items on the order...
+    if ($quantity > 0) {
+      // Use the dynamic menu item title.
+      $title = format_plural($quantity, 'Cart 1', 'Cart @count'); 
+    } 
+ 
+  } 
+  return $title;
+} 
+
+function get_total_items() {
+	$user = $GLOBALS['user']; 
+		// If the user actually has a cart order...
+	  if ($order = commerce_cart_order_load($user->uid)) {
+	    // Count the number of product line items on the order.
+	    $wrapper = entity_metadata_wrapper('commerce_order', $order);
+	    $quantity = commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types());
+
+	
+	  } 
+	  return $quantity; 
+}
+
+
+
+/**
+ * Implements hook_ajax_render_alter().  
+ */  
+function hdmd_cart_popup_ajax_render_alter(&$commands) {
+  $link_class = variable_get('hdmd_cart_popup_linkclass');
+  $commands[] = ajax_command_replace($link_class, '<a href="/cart/my" class="my-cart sf-depth-1">Cart <span class="quantity">'. get_total_items() .'</span></a>');
+  return array(
+  	'#type' => 'ajax',
+  	'#commands' => $commands,
+  );
+}
