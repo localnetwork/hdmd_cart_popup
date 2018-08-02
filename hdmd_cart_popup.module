@@ -145,7 +145,6 @@ function get_total_items() {
 
 /**
  * Implements hook_ajax_render_alter().  
- * Adding the class on ajax.
  */  
 function hdmd_cart_popup_ajax_render_alter(&$commands) {
   $link_class = variable_get('hdmd_cart_popup_linkclass');
