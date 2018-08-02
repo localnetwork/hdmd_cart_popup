@@ -65,9 +65,9 @@ function hdmd_cart_popup_form_commerce_cart_add_to_cart_form_alter(&$form, $form
 		$errors = form_get_errors();   
 		$form['#hdmd_errors'] = $errors;
 		
-		$form['submit']['#ajax'] = array(  
+		$form['submit']['#ajax'] = array(   
 		    'callback' => '_ajx_process',  
-		);   
+		);    
 		$product = commerce_product_load($form['product_id']['#value']); 
 		$form['#hdmd_product_title'] = $product->title;
 		
